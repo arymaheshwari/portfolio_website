@@ -9,6 +9,7 @@ const kindLabel: Record<NodeKind, string> = {
   research:   'RESEARCH',
   industry:   'INDUSTRY',
   project:    'PROJECT',
+  resume:     'RÉSUMÉ',
 }
 
 export const kindColor: Record<NodeKind, string> = {
@@ -17,12 +18,15 @@ export const kindColor: Record<NodeKind, string> = {
   research:   '#A78BFA',
   industry:   '#34D399',
   project:    '#22D3EE',
+  resume:     '#FFCB47',
 }
 
 export type CareerNodeData = CareerNode & {
   isSelected:    boolean
   isConvergence: boolean
   execState:     NodeExecState
+  isSkillHit:    boolean
+  isDimmed:      boolean
   onActivate:    () => void
 }
 
@@ -39,6 +43,8 @@ export function CareerNodeCard({ data }: NodeProps<CareerNodeType>) {
   const execState = data.execState ?? 'idle'
   const isActive  = execState === 'active'
   const isDone    = execState === 'complete'
+  const skillHit  = data.isSkillHit
+  const dimmed    = data.isDimmed
   const width     = data.isConvergence ? 244 : 220
   const traceW    = width - 28
 
@@ -70,19 +76,26 @@ export function CareerNodeCard({ data }: NodeProps<CareerNodeType>) {
           }
         }}
         style={{
-          background:    isActive ? '#161b28' : isDone ? '#13181f' : 'var(--color-surface)',
-          border:        `1px solid ${data.isSelected ? color + 'CC' : isActive ? color + '60' : 'var(--color-border)'}`,
+          background:    isActive
+            ? `linear-gradient(155deg, #1a2030 0%, #12161f 100%)`
+            : isDone
+            ? `linear-gradient(155deg, #161b24 0%, #11151c 100%)`
+            : `linear-gradient(155deg, var(--color-surface-2) 0%, var(--color-surface) 100%)`,
+          border:        `1px solid ${skillHit ? color : data.isSelected ? color + 'CC' : isActive ? color + '70' : 'var(--color-border)'}`,
           borderLeft:    `3px solid ${color}`,
-          borderRadius:  '4px',
+          borderRadius:  '9px',
           padding:       '12px 14px',
           width:         `${width}px`,
           cursor:        'pointer',
-          transition:    'background 0.3s, border-color 0.3s, box-shadow 0.3s',
-          boxShadow:     data.isSelected
-            ? `0 0 20px ${color}30`
+          opacity:       dimmed ? 0.28 : 1,
+          transition:    'transform 0.28s var(--ease-out-quart), opacity 0.3s, background 0.3s, border-color 0.3s, box-shadow 0.3s',
+          boxShadow:     skillHit
+            ? `0 0 0 2px ${color}, 0 0 30px ${color}cc, 0 4px 16px rgba(0,0,0,0.5)`
+            : data.isSelected
+            ? `0 0 0 1px ${color}40, 0 8px 28px ${color}26, 0 4px 14px rgba(0,0,0,0.45)`
             : isDone
-            ? `0 0 10px ${color}12`
-            : 'none',
+            ? `0 0 14px ${color}14, 0 3px 12px rgba(0,0,0,0.35)`
+            : '0 2px 10px rgba(0,0,0,0.32)',
           fontFamily:    'var(--font-mono)',
           ['--glow-dim' as string]:    `${color}20`,
           ['--glow-bright' as string]: `${color}55`,
@@ -95,8 +108,9 @@ export function CareerNodeCard({ data }: NodeProps<CareerNodeType>) {
           </span>
           {data.isConvergence && (
             <span aria-label="convergence node" style={{
-              fontSize: '8px', letterSpacing: '0.1em', color, opacity: 0.65,
-              border: `1px solid ${color}45`, borderRadius: '2px', padding: '1px 5px',
+              fontSize: '8px', letterSpacing: '0.1em', color, opacity: 0.7,
+              border: `1px solid ${color}45`, borderRadius: '4px', padding: '1px 5px',
+              background: `${color}10`,
             }}>
               CONVERGENCE
             </span>
@@ -133,7 +147,7 @@ export function CareerNodeCard({ data }: NodeProps<CareerNodeType>) {
               background: isActive ? `${color}18` : 'var(--color-chrome)',
               color:      isActive ? color : 'var(--color-text)',
               border:     `1px solid ${isActive ? color + '40' : 'var(--color-border)'}`,
-              borderRadius:'2px', padding: '2px 5px',
+              borderRadius:'4px', padding: '2px 6px',
               transition: 'all 0.3s',
             }}>
               {s}

@@ -1,17 +1,18 @@
-export type NodeKind = 'edu' | 'coursework' | 'research' | 'industry' | 'project'
+export type NodeKind = 'edu' | 'coursework' | 'research' | 'industry' | 'project' | 'resume'
 
 export type CareerNode = {
   id: string
   title: string
   org?: string
-  start: string    // "YYYY-MM" — drives sector-time display
+  start: string    // "YYYY-MM"
   end?: string     // omit if ongoing
   kind: NodeKind
-  stack: string[]  // drives telemetry channels
+  stack: string[]
   summary: string  // hover preview (1–2 lines)
-  detail: string   // engineer's readout panel (full)
+  detail: string   // readout panel (full)
   links?: { label: string; url: string }[]
-  feeds?: string   // why this led to the next node(s)
+  feeds?: string   // why this led to the next layer
+  image?: string   // optional portrait shown in the readout panel
 }
 
 export type Edge = { from: string; to: string }
@@ -19,7 +20,7 @@ export type Edge = { from: string; to: string }
 // ── Nodes ─────────────────────────────────────────────────────────────────────
 
 export const nodes: CareerNode[] = [
-  // ── Foundation ──────────────────────────────────────────────────────────────
+  // ── Layer 0 · Foundation ────────────────────────────────────────────────────
 
   {
     id: 'edu',
@@ -33,58 +34,94 @@ export const nodes: CareerNode[] = [
     detail:
       'University of Wisconsin–Madison, graduating May 2027. GPA 3.7/4. ' +
       'Dual degree in Computer Science and Data Science.\n\n' +
-      'The degree runs two parallel tracks: a systems track (OS, algorithms, C programming) ' +
-      'and a data-systems track (databases, big data). ' +
-      'Coursework: Data Structures & Algorithms, OS, Big Data Systems, Database Management & Systems.',
-    feeds:
-      'The CS core splits into a systems track and a data track that each feed separate downstream work before converging at HG Insights.',
+      'The foundation node — every course branches from here, and the coursework in turn ' +
+      'feeds the internships, research, and projects downstream.',
+    feeds: 'The degree branches into the core coursework that underpins every role and project.',
   },
 
-  // ── Coursework ──────────────────────────────────────────────────────────────
+  // ── Layer 1 · Coursework ────────────────────────────────────────────────────
 
   {
-    id: 'coursework-systems',
-    title: 'Systems Programming & OS',
+    id: 'ds-algo',
+    title: 'Data Structures & Algorithms',
     org: 'UW–Madison',
     start: '2023-09',
-    end: '2024-12',
+    end: '2024-05',
     kind: 'coursework',
-    stack: ['C', 'OS', 'Data Structures', 'Algorithms', 'Linux'],
-    summary: 'OS internals and data structures & algorithms. C programming throughout.',
+    stack: ['Java', 'Algorithms', 'Data Structures', 'Complexity'],
+    summary: 'Core algorithms and data structures — the analytical backbone for everything that follows.',
     detail:
-      'Coursework covering operating systems and data structures & algorithms.\n\n' +
-      '**OS track**: process scheduling, virtual memory, file systems, concurrency primitives, ' +
-      'and the kernel lifecycle — all implemented in C.\n\n' +
-      '**Algorithms track**: asymptotic analysis, sorting, graph algorithms, dynamic programming, ' +
-      'and complexity classes.\n\n' +
-      'The low-level C and systems programming foundation built here carries into every subsequent role ' +
-      'requiring embedded firmware or backend infrastructure.',
-    feeds:
-      'C and systems programming knowledge feeds directly into steering-wheel firmware at Wisconsin Racing and backend pipeline infrastructure at HG Insights.',
+      'Asymptotic analysis, sorting and searching, trees, hashing, graph algorithms, ' +
+      'dynamic programming, and complexity classes. ' +
+      'The reasoning toolkit applied across every downstream role and project.',
+    feeds: 'Algorithmic fundamentals feed directly into the internships, research, and projects.',
   },
 
   {
-    id: 'coursework-data',
-    title: 'Databases & Big Data Systems',
+    id: 'os',
+    title: 'Operating Systems',
     org: 'UW–Madison',
     start: '2024-01',
-    end: '2025-05',
+    end: '2024-12',
     kind: 'coursework',
-    stack: ['SQL', 'PostgreSQL', 'Python', 'Big Data', 'Distributed Systems'],
-    summary: 'Database internals and big data systems. SQL, query optimization, large-scale data processing.',
+    stack: ['C', 'Concurrency', 'Virtual Memory', 'Linux'],
+    summary: 'OS internals in C — processes, memory, concurrency, file systems.',
     detail:
-      'Coursework covering Database Management & Systems and Big Data Systems.\n\n' +
-      '**Database track**: SQL, relational algebra, query planning and optimization, ' +
-      'transaction management, indexing structures, and storage engine fundamentals.\n\n' +
-      '**Big data track**: distributed processing, partitioning, fault tolerance, ' +
-      'and large-scale data pipeline design.\n\n' +
-      'The database internals coursework naturally raises the question of more efficient index structures — ' +
-      'directly motivating the novel data structure work.',
-    feeds:
-      'Database and distributed-systems depth feeds into large-scale data pipeline work at HG Insights and motivates the novel data structure patent.',
+      'Process scheduling, virtual memory, concurrency primitives, synchronization, ' +
+      'and file systems — implemented in C against a teaching kernel. ' +
+      'The low-level systems grounding behind the firmware and backend infrastructure work.',
+    feeds: 'Systems-level C and concurrency knowledge feeds the internships, research, and embedded projects.',
   },
 
-  // ── Industry ─────────────────────────────────────────────────────────────────
+  {
+    id: 'bigdata',
+    title: 'Big Data Systems',
+    org: 'UW–Madison',
+    start: '2024-09',
+    end: '2025-05',
+    kind: 'coursework',
+    stack: ['Spark', 'Distributed Systems', 'Python', 'Hadoop'],
+    summary: 'Distributed data processing at scale — partitioning, fault tolerance, pipelines.',
+    detail:
+      'Distributed processing models, partitioning, shuffling, fault tolerance, ' +
+      'and large-scale pipeline design with Spark/Hadoop-style systems. ' +
+      'The mental model behind the 15M-row normalization pipeline at HG Insights.',
+    feeds: 'Distributed-systems thinking feeds the data-pipeline internships, research, and projects.',
+  },
+
+  {
+    id: 'dbms',
+    title: 'Database Management & Systems',
+    org: 'UW–Madison',
+    start: '2024-09',
+    end: '2025-05',
+    kind: 'coursework',
+    stack: ['SQL', 'PostgreSQL', 'Query Optimization', 'Indexing'],
+    summary: 'Database internals — SQL, query planning, transactions, indexing structures.',
+    detail:
+      'Relational algebra, SQL, query planning and optimization, transactions, ' +
+      'and indexing structures down to the storage engine. ' +
+      'Directly motivated the novel index data structure that was later patented.',
+    feeds: 'Database internals feed the data-heavy internships and the novel data-structure project.',
+  },
+
+  {
+    id: 'ai',
+    title: 'Artificial Intelligence',
+    org: 'UW–Madison',
+    start: '2025-01',
+    end: '2025-05',
+    kind: 'coursework',
+    stack: ['Search', 'Probabilistic Models', 'Neural Networks', 'Python'],
+    summary: 'Classical and modern AI — search, reasoning, learning, and neural networks.',
+    detail:
+      'Adversarial and heuristic search, constraint satisfaction, probabilistic reasoning, ' +
+      'and the foundations of machine learning and neural networks.\n\n' +
+      'The conceptual grounding behind the EEG speech-classification research.',
+    feeds: 'AI foundations feed directly into the EEG speech-classification research.',
+  },
+
+  // ── Layer 2 · Internships & Research ────────────────────────────────────────
 
   {
     id: 'aeries',
@@ -105,8 +142,7 @@ export const nodes: CareerNode[] = [
       '**prompt-injection checks** and output verification to keep rankings reliable.\n\n' +
       'Containerized with **Docker** and deployed on **GCP**, running end-to-end from ' +
       'resume input to a ranked shortlist surfaced to HR.',
-    feeds:
-      'First production fullstack and AI product experience — API design, prompt safety, and deployment — feeds into the AI Mock Interview project and the HG Insights internship.',
+    feeds: 'First production full-stack + AI experience — carries into every shipped project.',
   },
 
   {
@@ -127,14 +163,35 @@ export const nodes: CareerNode[] = [
       'architecting a **LangGraph** DAG that orchestrates SEC filing ingestion and a trained **SLM**. ' +
       'Deployed on **AWS AgentCore, Lambda, and ECR (Docker)**.\n\n' +
       '**Data curation and normalization** — Drove data completeness for **15M+** unique rows from ' +
-      '**20% to 100%**, then categorized them into a 180-class taxonomy to make the training set consistent.\n\n' +
-      '**Production impact** — Shipped the model into production, powering market analysis for ' +
+      '**20% to 100%**, then categorized them into a 180-class taxonomy.\n\n' +
+      '**Production impact** — Shipped into production, powering market analysis for ' +
       '**75% of the tech companies in the Fortune 100**.',
-    feeds:
-      'Production LangGraph orchestration and MCP experience at HG directly enables the research lab\'s MCP-based neural network deployment.',
+    feeds: 'LangGraph orchestration and pipeline experience carries directly into the shipped projects.',
   },
 
-  // ── Projects ─────────────────────────────────────────────────────────────────
+  {
+    id: 'research',
+    title: 'EEG Speech Classification Research',
+    org: 'University of Wisconsin–Madison (Research Assistant)',
+    start: '2025-09',
+    end: '2026-05',
+    kind: 'research',
+    stack: ['Python', 'PyTorch', 'EEG / Signal Processing', 'Neural Networks', 'MCP', 'Claude Code'],
+    summary:
+      '81% accuracy classifying Mandarin phonetic contrasts from raw EEG signals. ' +
+      'MCP server productionized for lab use via Claude Code.',
+    detail:
+      'Undergraduate Research Assistant, University of Wisconsin–Madison. Sep 2025 – May 2026.\n\n' +
+      'Built a **ML pipeline** to classify natural speech from raw EEG signals, implementing the methodology ' +
+      'from **Berg et al. (2021) IEEE Paper** in Python end-to-end — signal preprocessing and classification.\n\n' +
+      'Trained and evaluated multiple **neural network** architectures, reaching ' +
+      '**81% accuracy** on recognizing critical Mandarin phonetic contrasts.\n\n' +
+      'Productionized an **MCP server** exposing the model over the local network, giving lab students a ' +
+      'clean interface to run the network without any ML setup — built with Claude Code.',
+    feeds: 'ML pipeline and MCP tooling experience feeds the shipped projects.',
+  },
+
+  // ── Layer 3 · Projects ──────────────────────────────────────────────────────
 
   {
     id: 'wiscracing',
@@ -172,30 +229,6 @@ export const nodes: CareerNode[] = [
       'mock interviews end-to-end from resume upload to scored feedback.\n\n' +
       'Engineered **multi-model routing** across hosted (OpenAI) and self-hosted (Ollama) LLMs, ' +
       'decoupling the system from any single provider for cost and availability control.',
-    feeds:
-      'Multi-agent orchestration and FastAPI discipline demonstrates readiness for LangGraph pipeline work at HG Insights.',
-  },
-
-  {
-    id: 'research',
-    title: 'EEG Speech Classification Research',
-    org: 'University of Wisconsin–Madison (Research Assistant)',
-    start: '2025-09',
-    end: '2026-05',
-    kind: 'research',
-    stack: ['Python', 'PyTorch', 'EEG / Signal Processing', 'Neural Networks', 'MCP', 'Claude Code'],
-    summary:
-      '81% accuracy classifying Mandarin phonetic contrasts from raw EEG signals. ' +
-      'MCP server productionized for lab use via Claude Code.',
-    detail:
-      'Undergraduate Research Assistant, University of Wisconsin–Madison. Sep 2025 – May 2026.\n\n' +
-      'Built a **ML pipeline** to classify natural speech from raw EEG signals, implementing the methodology ' +
-      'from **Berg et al. (2021) IEEE Paper** in Python end-to-end — signal preprocessing and classification.\n\n' +
-      'Trained and evaluated multiple **neural network** architectures to improve classification, reaching ' +
-      '**81% accuracy** on recognizing critical Mandarin phonetic contrasts.\n\n' +
-      'Productionized an **MCP server** exposing the model via the local network, giving lab students a clean ' +
-      'interface to run the neural network and classify Mandarin phonetics without any ML setup — ' +
-      'built with Claude Code.',
   },
 
   {
@@ -212,36 +245,75 @@ export const nodes: CareerNode[] = [
       'Designed and implemented a novel tree-based data structure optimized for range-predicate queries. ' +
       'Non-matching subtrees are pruned at traversal time based on stored partition bounds, ' +
       'reducing comparisons for queries with selective predicates.\n\n' +
-      'The structure emerged from database internals coursework — specifically from examining ' +
-      'why a standard index visits nodes provably outside a query\'s predicate range.\n\n' +
-      '**Patent filed** for the novel data structure. ' +
-      'Also contributed an open-source fix to VSCode.',
+      'The structure emerged from database internals — examining why a standard index visits nodes ' +
+      'provably outside a query\'s predicate range.\n\n' +
+      '**Patent filed** for the novel data structure. Also contributed an open-source fix to VSCode.',
+  },
+
+  // ── Layer 4 · Output ────────────────────────────────────────────────────────
+
+  {
+    id: 'resume',
+    title: 'Résumé',
+    org: 'Compiled Output',
+    start: '2023-09',
+    end: '2027-05',
+    kind: 'resume',
+    image: '/profile.png',
+    stack: ['Full Résumé', 'LinkedIn', 'GitHub', 'Email'],
+    summary: 'The terminal node — every path through the graph resolves here. Links to reach me.',
+    detail:
+      'This is the terminal node: every path through the graph converges here.\n\n' +
+      'Education seeds the coursework, the coursework feeds the internships and research, ' +
+      'and those resolve into the projects that define the work. ' +
+      'The **résumé is the compiled artifact** of that whole execution.\n\n' +
+      'Reach me through the links below.',
+    links: [
+      { label: 'LinkedIn — /in/arymaheshwari', url: 'https://www.linkedin.com/in/arymaheshwari/' },
+      { label: 'GitHub — @arymaheshwari',      url: 'https://github.com/arymaheshwari' },
+      { label: 'Email — maheshwari25@wisc.edu', url: 'mailto:maheshwari25@wisc.edu' },
+    ],
   },
 ]
 
 // ── Edges ─────────────────────────────────────────────────────────────────────
 //
-// DAG narrative:
-//   edu            → coursework tracks (systems + data)
-//   systems track  → aeries, wiscracing, hg (backend infrastructure)
-//   data track     → aeries, hg (pipelines), ppt (novel index)
-//   aeries         → mockinterview (first fullstack → personal project), hg
-//   mockinterview  → hg (multi-agent readiness → LangGraph work)
-//   hg             → research (LangGraph/MCP experience → research MCP server)
-//
-// hg has 4 inbound edges (cs-sys, cs-data, aeries, mockinterview) — convergence node.
+// Curated DAG:
+//   edu seeds every course
+//   DS&A, Big Data, DBMS  → HG + Aeries
+//   AI                    → Research
+//   OS                    → Wisconsin Racing       (course → project, direct)
+//   DBMS                  → Novel Data Structure    (course → project, direct)
+//   Aeries, HG            → AI Mock Interview
+//   Research + all projects → résumé (terminal node)
+
+const COURSES  = ['ds-algo', 'bigdata', 'dbms', 'os', 'ai']
+const PROJECTS = ['wiscracing', 'mockinterview', 'ppt']
 
 export const edges: Edge[] = [
-  { from: 'edu',                to: 'coursework-systems' },
-  { from: 'edu',                to: 'coursework-data'    },
-  { from: 'coursework-systems', to: 'aeries'             },
-  { from: 'coursework-data',    to: 'aeries'             },
-  { from: 'coursework-systems', to: 'wiscracing'         },
-  { from: 'coursework-systems', to: 'hg'                 },
-  { from: 'coursework-data',    to: 'hg'                 },
-  { from: 'coursework-data',    to: 'ppt'                },
-  { from: 'aeries',             to: 'mockinterview'      },
-  { from: 'aeries',             to: 'hg'                 },
-  { from: 'mockinterview',      to: 'hg'                 },
-  { from: 'hg',                 to: 'research'           },
+  // education seeds every course
+  ...COURSES.map(c => ({ from: 'edu', to: c })),
+
+  // coursework → internships
+  { from: 'ds-algo', to: 'hg' },
+  { from: 'ds-algo', to: 'aeries' },
+  { from: 'bigdata', to: 'hg' },
+  { from: 'bigdata', to: 'aeries' },
+  { from: 'dbms',    to: 'hg' },
+  { from: 'dbms',    to: 'aeries' },
+
+  // coursework → research
+  { from: 'ai',      to: 'research' },
+
+  // coursework → projects (direct)
+  { from: 'os',      to: 'wiscracing' },
+  { from: 'dbms',    to: 'ppt' },
+
+  // internships → project
+  { from: 'aeries',  to: 'mockinterview' },
+  { from: 'hg',      to: 'mockinterview' },
+
+  // everything resolves into the résumé
+  { from: 'research', to: 'resume' },
+  ...PROJECTS.map(p => ({ from: p, to: 'resume' })),
 ]

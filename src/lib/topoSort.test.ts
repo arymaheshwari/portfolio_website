@@ -61,7 +61,9 @@ describe('topoSort — basic correctness', () => {
 // ── Integration: run the real career DAG ─────────────────────────────────────
 
 describe('career DAG — topological correctness', () => {
-  const nodeIds = nodes.map(n => n.id)
+  const nodeIds  = nodes.map(n => n.id)
+  const COURSES  = ['ds-algo', 'bigdata', 'dbms', 'os', 'ai']
+  const PROJECTS = ['wiscracing', 'mockinterview', 'ppt']
   let order: string[]
 
   it('sorts without throwing (no cycles)', () => {
@@ -69,38 +71,45 @@ describe('career DAG — topological correctness', () => {
     expect(order).toHaveLength(nodeIds.length)
   })
 
-  it('edu comes before its children', () => {
+  it('edu is the starting node, before every course', () => {
     order = topoSort(nodeIds, edges)
-    expect(assertPrecedence(order, 'edu', ['coursework-systems', 'coursework-data'])).toBe(true)
+    expect(order[0]).toBe('edu')
+    expect(assertPrecedence(order, 'edu', COURSES)).toBe(true)
   })
 
-  it('coursework-systems comes before wiscracing and hg', () => {
+  it('DS&A, Big Data and DBMS precede HG and Aeries', () => {
     order = topoSort(nodeIds, edges)
-    expect(assertPrecedence(order, 'coursework-systems', ['wiscracing', 'hg'])).toBe(true)
+    for (const c of ['ds-algo', 'bigdata', 'dbms']) {
+      expect(assertPrecedence(order, c, ['hg', 'aeries'])).toBe(true)
+    }
   })
 
-  it('coursework-data comes before hg and ppt', () => {
+  it('AI precedes Research', () => {
     order = topoSort(nodeIds, edges)
-    expect(assertPrecedence(order, 'coursework-data', ['hg', 'ppt'])).toBe(true)
+    expect(order.indexOf('ai')).toBeLessThan(order.indexOf('research'))
   })
 
-  it('aeries comes before hg', () => {
+  it('OS precedes Wisconsin Racing, DBMS precedes the Novel Data Structure', () => {
     order = topoSort(nodeIds, edges)
-    expect(order.indexOf('aeries')).toBeLessThan(order.indexOf('hg'))
+    expect(order.indexOf('os')).toBeLessThan(order.indexOf('wiscracing'))
+    expect(order.indexOf('dbms')).toBeLessThan(order.indexOf('ppt'))
   })
 
-  it('aeries comes before mockinterview', () => {
+  it('Aeries and HG precede the AI Mock Interview', () => {
     order = topoSort(nodeIds, edges)
-    expect(order.indexOf('aeries')).toBeLessThan(order.indexOf('mockinterview'))
+    expect(assertPrecedence(order, 'aeries', ['mockinterview'])).toBe(true)
+    expect(assertPrecedence(order, 'hg', ['mockinterview'])).toBe(true)
   })
 
-  it('mockinterview comes before hg', () => {
+  it('research and every project precede the résumé', () => {
     order = topoSort(nodeIds, edges)
-    expect(order.indexOf('mockinterview')).toBeLessThan(order.indexOf('hg'))
+    for (const id of [...PROJECTS, 'research']) {
+      expect(order.indexOf(id)).toBeLessThan(order.indexOf('resume'))
+    }
   })
 
-  it('hg comes before research', () => {
+  it('résumé is the single terminal node', () => {
     order = topoSort(nodeIds, edges)
-    expect(assertPrecedence(order, 'hg', ['research'])).toBe(true)
+    expect(order[order.length - 1]).toBe('resume')
   })
 })

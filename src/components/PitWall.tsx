@@ -13,43 +13,43 @@ import { nodes as careerNodes, edges as careerEdges, type CareerNode } from '../
 import { useExecution, topoOrder } from '../lib/executionEngine'
 import { CareerNodeCard, type CareerNodeData } from './CareerNodeCard'
 import { ReadoutPanel } from './ReadoutPanel'
-import { SectorTiming } from './SectorTiming'
+import { CompoundLegend } from './CompoundLegend'
+import { SkillsPanel } from './SkillsPanel'
 import { StintTimeline } from './StintTimeline'
+import { BootSequence } from './BootSequence'
+import { AmbientBackdrop } from './AmbientBackdrop'
+import { DataFlowEdge } from './DataFlowEdge'
 
+// Five-layer left-to-right layout: edu → coursework → roles → projects → résumé
 const POSITIONS: Record<string, { x: number; y: number }> = {
-  'edu':                { x: 0,    y: 250 },
-  'coursework-systems': { x: 300,  y: 60  },
-  'coursework-data':    { x: 300,  y: 400 },
-  'wiscracing':         { x: 600,  y: 0   },
-  'aeries':             { x: 600,  y: 280 },
-  'ppt':                { x: 600,  y: 540 },
-  'mockinterview':      { x: 900,  y: 100 },
-  'hg':                 { x: 1180, y: 240 },
-  'research':           { x: 1480, y: 200 },
+  'edu':           { x: 0,    y: 480 },
+
+  // courses, top → bottom: DS&A, Big Data, DBMS, OS, AI
+  'ds-algo':       { x: 400,  y: 0    },
+  'bigdata':       { x: 400,  y: 240  },
+  'dbms':          { x: 400,  y: 480  },
+  'os':            { x: 400,  y: 720  },
+  'ai':            { x: 400,  y: 960  },
+
+  // internships, top → bottom: HG, Aeries, Research
+  'hg':            { x: 880,  y: 200  },
+  'aeries':        { x: 880,  y: 480  },
+  'research':      { x: 880,  y: 760  },
+
+  // projects
+  'wiscracing':    { x: 1360, y: 200  },
+  'mockinterview': { x: 1360, y: 480  },
+  'ppt':           { x: 1360, y: 760  },
+
+  'resume':        { x: 1840, y: 480  },
 }
 
 const nodeTypes = { career: CareerNodeCard }
-
-const inDegree = new Map<string, number>()
-for (const e of careerEdges) inDegree.set(e.to, (inDegree.get(e.to) ?? 0) + 1)
-const convergenceIds = new Set([...inDegree.entries()].filter(([, d]) => d >= 3).map(([id]) => id))
+const edgeTypes = { dataflow: DataFlowEdge }
 
 type HoverState = { node: CareerNode; x: number; y: number }
 
 // ── hooks ─────────────────────────────────────────────────────────────────────
-
-function useClock() {
-  const [tick, setTick] = useState(() => new Date())
-  useEffect(() => {
-    const id = setInterval(() => setTick(new Date()), 100)
-    return () => clearInterval(id)
-  }, [])
-  const h  = tick.getHours().toString().padStart(2, '0')
-  const m  = tick.getMinutes().toString().padStart(2, '0')
-  const s  = tick.getSeconds().toString().padStart(2, '0')
-  const ds = Math.floor(tick.getMilliseconds() / 100)
-  return `${h}:${m}:${s}.${ds}`
-}
 
 function useIsMobile(bp = 768) {
   const [mobile, setMobile] = useState(() => window.innerWidth < bp)
@@ -63,36 +63,45 @@ function useIsMobile(bp = 768) {
   return mobile
 }
 
-function formatElapsed(ms: number) {
-  const s = ms / 1000
-  return `${Math.floor(s / 60)}:${(s % 60).toFixed(1).padStart(4, '0')}`
-}
-
 // ── component ─────────────────────────────────────────────────────────────────
 
 export function PitWall() {
   const {
     session, nodeStates, flowing, done,
     activeSectorId, completedIds,
-    elapsedMs, run, reset, skip,
+    run, reset, skip,
   } = useExecution()
+
+  const prefersReduced = useMemo(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches, [])
 
   const [selectedNode, setSelectedNode] = useState<CareerNode | null>(null)
   const [hover, setHover]               = useState<HoverState | null>(null)
-  const clock        = useClock()
+  const [skillNodes, setSkillNodes]     = useState<Set<string> | null>(null)
+  const [booted, setBooted]             = useState(prefersReduced)
   const isMobile     = useIsMobile()
   const hoverTimer   = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const prefersReduced = useMemo(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches, [])
+  const spotlightRef = useRef<HTMLDivElement | null>(null)
+  const autoRan      = useRef(false)
 
   useEffect(() => { if (prefersReduced) skip() }, []) // eslint-disable-line
 
-  const activeSector = activeSectorId ? careerNodes.find(n => n.id === activeSectorId) : null
+  // Auto-execute the DAG once the boot sequence clears
+  useEffect(() => {
+    if (booted && !prefersReduced && !autoRan.current && session === 'idle') {
+      autoRan.current = true
+      const t = setTimeout(() => run(), 500)
+      return () => clearTimeout(t)
+    }
+  }, [booted]) // eslint-disable-line
 
-  // Live-region message for screen readers
+  const activeSector = activeSectorId ? careerNodes.find(n => n.id === activeSectorId) : null
+  const progress     = completedIds.size + (activeSectorId ? 1 : 0)
+  const totalNodes   = topoOrder.length
+
   const liveMsg = session === 'running' && activeSector
     ? `Executing: ${activeSector.title}`
     : session === 'complete'
-    ? 'Lap complete. All sectors done.'
+    ? 'Execution complete. All nodes resolved.'
     : ''
 
   const handleNodeActivate = useCallback((nodeId: string) => {
@@ -100,6 +109,10 @@ export function PitWall() {
     if (!n) return
     setSelectedNode(prev => (prev?.id === n.id ? null : n))
     setHover(null)
+  }, [])
+
+  const handleSkillHover = useCallback((ids: string[] | null) => {
+    setSkillNodes(ids && ids.length ? new Set(ids) : null)
   }, [])
 
   const rfNodes: RFNode<CareerNodeData>[] = useMemo(() =>
@@ -110,12 +123,14 @@ export function PitWall() {
       data: {
         ...n,
         isSelected:    selectedNode?.id === n.id,
-        isConvergence: convergenceIds.has(n.id),
+        isConvergence: false,
         execState:     nodeStates.get(n.id) ?? 'idle',
+        isSkillHit:    skillNodes ? skillNodes.has(n.id) : false,
+        isDimmed:      skillNodes ? !skillNodes.has(n.id) : false,
         onActivate:    () => handleNodeActivate(n.id),
       },
     })),
-    [selectedNode, nodeStates, handleNodeActivate],
+    [selectedNode, nodeStates, skillNodes, handleNodeActivate],
   )
 
   const rfEdges: RFEdge[] = useMemo(() =>
@@ -127,12 +142,9 @@ export function PitWall() {
         id,
         source:   e.from,
         target:   e.to,
+        type:     'dataflow',
         animated: isFlowing,
-        style: {
-          stroke:      isFlowing ? '#FF8700' : isDone ? '#4A6080' : '#3A4055',
-          strokeWidth: isFlowing || isDone ? 2 : 1.5,
-          transition:  'stroke 0.4s, stroke-width 0.4s',
-        },
+        data:     { flowing: isFlowing, done: isDone },
       }
     }),
     [flowing, done],
@@ -153,12 +165,21 @@ export function PitWall() {
     hoverTimer.current = setTimeout(() => setHover(null), 80)
   }, [])
 
+  // Cursor spotlight — moved imperatively to avoid re-renders
+  const handlePaneMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    const el = spotlightRef.current
+    if (!el) return
+    const rect = e.currentTarget.getBoundingClientRect()
+    el.style.transform = `translate(${e.clientX - rect.left}px, ${e.clientY - rect.top}px)`
+  }, [])
+
   // ── shared header ──────────────────────────────────────────────────────────
   const header = (
     <header style={{
-      height:      '48px',
-      background:  'var(--color-chrome)',
+      height:      '50px',
+      background:  'linear-gradient(180deg, #1f2435 0%, #161a26 100%)',
       borderBottom:'1px solid var(--color-border)',
+      boxShadow:   '0 1px 0 rgba(255,135,0,0.10), 0 6px 22px rgba(0,0,0,0.45)',
       display:     'flex',
       alignItems:  'center',
       padding:     '0 16px',
@@ -167,29 +188,29 @@ export function PitWall() {
       fontFamily:  'var(--font-mono)',
       zIndex:      10,
     }}>
-      <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--color-accent)', letterSpacing: '0.16em', flexShrink: 0 }}>
-        PIT WALL
+      <Avatar />
+      <span className="wordmark-grad" style={{ fontSize: '14px', fontWeight: 700, letterSpacing: '0.18em', flexShrink: 0, whiteSpace: 'nowrap' }}>
+        ARYAN MAHESHWARI
       </span>
 
       <Div />
 
-      {/* Session status — hidden label on narrow screens */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', overflow: 'hidden', flex: 1, minWidth: 0 }}>
         {session === 'idle' && (
           <span style={{ fontSize: '10px', color: 'var(--color-text-dim)', letterSpacing: '0.08em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-            {isMobile ? `${topoOrder.length} SECTORS` : `${topoOrder.length} SECTORS · ${careerEdges.length} SEGMENTS`}
+            {isMobile ? `${totalNodes} NODES` : `${totalNodes} NODES · ${careerEdges.length} CONNECTIONS · READY`}
           </span>
         )}
         {session === 'running' && (
           <>
-            <span style={{ fontSize: '11px', color: 'var(--color-live)', display: 'flex', alignItems: 'center', gap: '5px', whiteSpace: 'nowrap' }}>
-              <span className="status-blink">●</span>
-              {isMobile ? 'RUNNING' : 'LAP 1 · RUNNING'}
+            <span aria-hidden="true" className="signal-eq"><i /><i /><i /><i /><i /></span>
+            <span style={{ fontSize: '11px', color: 'var(--color-live)', whiteSpace: 'nowrap' }}>
+              EXECUTING · {progress}/{totalNodes}
             </span>
             {activeSector && !isMobile && (
               <>
                 <Div />
-                <span style={{ fontSize: '10px', color: 'var(--color-text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '180px' }}>
+                <span style={{ fontSize: '10px', color: 'var(--color-text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '200px' }}>
                   ▶ {activeSector.title}
                 </span>
               </>
@@ -197,35 +218,31 @@ export function PitWall() {
           </>
         )}
         {session === 'complete' && (
-          <span style={{ fontSize: '11px', color: 'var(--color-accent)', letterSpacing: '0.08em', whiteSpace: 'nowrap' }}>
-            ✓ LAP COMPLETE{elapsedMs ? ` · ${formatElapsed(elapsedMs)}` : ''}
+          <span style={{ fontSize: '11px', color: 'var(--color-accent)', letterSpacing: '0.1em', whiteSpace: 'nowrap' }}>
+            ✓ RESOLVED · {totalNodes}/{totalNodes} NODES
           </span>
         )}
       </div>
 
-      {/* Clock — hide on very small screens */}
-      {!isMobile && (
-        <>
-          <Div />
-          <span style={{ fontSize: '12px', color: 'var(--color-text)', letterSpacing: '0.06em', fontVariantNumeric: 'tabular-nums', opacity: 0.7, flexShrink: 0 }}>
-            {clock}
-          </span>
-        </>
-      )}
+      <Div />
+
+      <ResumeButton compact={isMobile} />
 
       <Div />
 
-      {/* Controls */}
       {session === 'idle'     && <Btn primary onClick={run}>RUN</Btn>}
       {session === 'running'  && <><Btn onClick={skip}>SKIP</Btn><Btn onClick={reset}>RESET</Btn></>}
       {session === 'complete' && <><Btn primary onClick={run}>RUN AGAIN</Btn><Btn onClick={reset}>RESET</Btn></>}
     </header>
   )
 
+  const bootOverlay = !booted ? <BootSequence onDone={() => setBooted(true)} /> : null
+
   // ── mobile view ────────────────────────────────────────────────────────────
   if (isMobile) {
     return (
-      <div style={{ width: '100vw', height: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--color-bg)' }}>
+      <div style={{ width: '100vw', height: '100vh', display: 'flex', flexDirection: 'column', background: 'transparent' }}>
+        {bootOverlay}
         <LiveRegion message={liveMsg} />
         {header}
         <StintTimeline
@@ -241,15 +258,25 @@ export function PitWall() {
 
   // ── desktop view ───────────────────────────────────────────────────────────
   return (
-    <div style={{ width: '100vw', height: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--color-bg)' }}>
+    <div style={{ width: '100vw', height: '100vh', display: 'flex', flexDirection: 'column', background: 'transparent' }}>
+      {bootOverlay}
       <LiveRegion message={liveMsg} />
       {header}
 
-      <div style={{ flex: 1, position: 'relative' }}>
+      <div
+        style={{ flex: 1, position: 'relative', overflow: 'hidden' }}
+        onMouseMove={handlePaneMouseMove}
+        onMouseEnter={() => spotlightRef.current?.classList.add('on')}
+        onMouseLeave={() => spotlightRef.current?.classList.remove('on')}
+      >
+        <AmbientBackdrop />
+        <div ref={spotlightRef} className="cursor-spotlight" aria-hidden="true" />
+
         <ReactFlow
           nodes={rfNodes}
           edges={rfEdges}
           nodeTypes={nodeTypes}
+          edgeTypes={edgeTypes}
           onNodeClick={handleNodeClick}
           onNodeMouseEnter={handleNodeMouseEnter}
           onNodeMouseLeave={handleNodeMouseLeave}
@@ -261,13 +288,16 @@ export function PitWall() {
           nodesDraggable={false}
           nodesConnectable={false}
           nodesFocusable={false}   // we handle focus ourselves via tabIndex on inner divs
-          style={{ background: 'var(--color-bg)' }}
+          style={{ background: 'transparent' }}
           proOptions={{ hideAttribution: true }}
           aria-label="Interactive career DAG. Tab through nodes, Enter or Space to open readout."
         >
-          <Background variant={BackgroundVariant.Dots} gap={28} size={1} color="#252A38" />
-          <Panel position="bottom-right" style={{ marginBottom: '12px', marginRight: '12px' }}>
-            <SectorTiming activeId={activeSectorId} completedIds={completedIds} />
+          <Background variant={BackgroundVariant.Dots} gap={28} size={1} color="#222736" />
+          <Panel position="top-left" style={{ marginTop: '12px', marginLeft: '12px' }}>
+            <CompoundLegend />
+          </Panel>
+          <Panel position="top-right" style={{ marginTop: '12px', marginRight: '12px' }}>
+            <SkillsPanel onHover={handleSkillHover} />
           </Panel>
         </ReactFlow>
 
@@ -275,18 +305,22 @@ export function PitWall() {
         {hover && !selectedNode && (
           <div
             aria-hidden="true"
+            className="rise-in"
             style={{
               position:     'fixed',
               left:         Math.min(hover.x + 18, window.innerWidth - 310),
               top:          Math.max(56, hover.y - 96),
               zIndex:       50,
-              background:   'var(--color-chrome)',
-              border:       '1px solid var(--color-border)',
-              borderRadius: '4px',
+              background:   'linear-gradient(160deg, rgba(28,32,48,0.96) 0%, rgba(18,21,28,0.96) 100%)',
+              border:       '1px solid var(--color-border-bright)',
+              borderRadius: '10px',
               padding:      '12px 16px',
               width:        '280px',
               fontFamily:   'var(--font-mono)',
               pointerEvents:'none',
+              backdropFilter: 'blur(8px)',
+              WebkitBackdropFilter: 'blur(8px)',
+              boxShadow:    '0 16px 40px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.05)',
             }}
           >
             <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--color-heading)', marginBottom: '6px', lineHeight: 1.3 }}>
@@ -313,6 +347,55 @@ function Div() {
   return <div aria-hidden="true" style={{ width: '1px', height: '20px', background: 'var(--color-border)', flexShrink: 0 }} />
 }
 
+function Avatar() {
+  return (
+    <img
+      src="/profile.png"
+      alt="Aryan Maheshwari"
+      onError={e => {
+        const t = e.currentTarget
+        if (!t.src.endsWith('/profile-placeholder.svg')) t.src = '/profile-placeholder.svg'
+      }}
+      style={{
+        width: '34px', height: '34px', borderRadius: '50%', objectFit: 'cover',
+        border: '1px solid var(--color-border-bright)',
+        boxShadow: '0 0 12px rgba(255,135,0,0.25)',
+        flexShrink: 0,
+      }}
+    />
+  )
+}
+
+function ResumeButton({ compact }: { compact?: boolean }) {
+  return (
+    <a
+      href="/resume.pdf"
+      download="Aryan-Maheshwari-Resume.pdf"
+      aria-label="Download résumé (PDF)"
+      style={{
+        display: 'inline-flex', alignItems: 'center', gap: '6px',
+        fontSize: '11px', letterSpacing: '0.12em', fontWeight: 700,
+        fontFamily: 'var(--font-mono)', textDecoration: 'none',
+        background: 'linear-gradient(180deg, #FFA22E 0%, #FF8700 100%)', color: '#0A0C10',
+        border: '1px solid #FF9A1E', borderRadius: '6px',
+        padding: '6px 14px', flexShrink: 0, whiteSpace: 'nowrap',
+        boxShadow: '0 0 16px rgba(255,135,0,0.35)',
+        transition: 'transform 0.15s var(--ease-out-quart), box-shadow 0.2s',
+      }}
+      onMouseEnter={e => {
+        e.currentTarget.style.transform = 'translateY(-1px)'
+        e.currentTarget.style.boxShadow = '0 0 22px rgba(255,135,0,0.5)'
+      }}
+      onMouseLeave={e => {
+        e.currentTarget.style.transform = 'translateY(0)'
+        e.currentTarget.style.boxShadow = '0 0 16px rgba(255,135,0,0.35)'
+      }}
+    >
+      {compact ? '' : 'RÉSUMÉ'} <span aria-hidden="true">↓</span>
+    </a>
+  )
+}
+
 function Btn({ children, onClick, primary }: { children: React.ReactNode; onClick?: () => void; primary?: boolean }) {
   return (
     <button
@@ -322,17 +405,26 @@ function Btn({ children, onClick, primary }: { children: React.ReactNode; onClic
         letterSpacing:'0.14em',
         fontWeight:   700,
         fontFamily:   'var(--font-mono)',
-        background:   primary ? 'var(--color-accent)' : 'transparent',
+        background:   primary ? 'linear-gradient(180deg, #FFA22E 0%, #FF8700 100%)' : 'rgba(255,255,255,0.02)',
         color:        primary ? '#0A0C10' : 'var(--color-text)',
-        border:       primary ? 'none' : '1px solid var(--color-border)',
-        borderRadius: '3px',
+        border:       primary ? '1px solid #FF9A1E' : '1px solid var(--color-border)',
+        borderRadius: '6px',
         padding:      '6px 16px',
         cursor:       'pointer',
         flexShrink:   0,
-        transition:   'opacity 0.15s',
+        boxShadow:    primary ? '0 0 16px rgba(255,135,0,0.35)' : 'none',
+        transition:   'transform 0.15s var(--ease-out-quart), box-shadow 0.2s, border-color 0.2s, background 0.2s',
       }}
-      onMouseEnter={e => (e.currentTarget.style.opacity = '0.8')}
-      onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
+      onMouseEnter={e => {
+        e.currentTarget.style.transform = 'translateY(-1px)'
+        if (primary) e.currentTarget.style.boxShadow = '0 0 22px rgba(255,135,0,0.5)'
+        else { e.currentTarget.style.borderColor = 'var(--color-border-bright)'; e.currentTarget.style.background = 'rgba(255,255,255,0.05)' }
+      }}
+      onMouseLeave={e => {
+        e.currentTarget.style.transform = 'translateY(0)'
+        if (primary) e.currentTarget.style.boxShadow = '0 0 16px rgba(255,135,0,0.35)'
+        else { e.currentTarget.style.borderColor = 'var(--color-border)'; e.currentTarget.style.background = 'rgba(255,255,255,0.02)' }
+      }}
     >
       {children}
     </button>

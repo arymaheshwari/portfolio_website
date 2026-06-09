@@ -7,8 +7,8 @@ export type SessionState  = 'idle' | 'running' | 'complete'
 
 const NODE_ACTIVE_MS = 800   // how long a node stays "active"
 const EDGE_TRAVEL_MS = 500   // time for the edge-flow animation before activating next
-const CONV_PAUSE_MS  = 800   // extra beat before the convergence node (hg) activates
-const CONVERGENCE_IDS = new Set(['hg'])
+const CONV_PAUSE_MS  = 800   // extra beat before a convergence node activates
+const CONVERGENCE_IDS = new Set<string>()  // symmetric layers — no special pause
 
 export const topoOrder = topoSort(careerNodes.map(n => n.id), careerEdges)
 

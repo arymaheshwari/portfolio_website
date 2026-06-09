@@ -73,7 +73,12 @@ export function ReadoutPanel({ node, onClose }: Props) {
             exit={{ opacity: 0 }}
             onClick={onClose}
             aria-hidden="true"
-            style={{ position: 'fixed', inset: 0, zIndex: 90, background: 'rgba(10,12,16,0.6)' }}
+            style={{
+              position: 'fixed', inset: 0, zIndex: 90,
+              background: 'rgba(8,10,14,0.55)',
+              backdropFilter: 'blur(4px)',
+              WebkitBackdropFilter: 'blur(4px)',
+            }}
           />
 
           <motion.aside
@@ -90,10 +95,11 @@ export function ReadoutPanel({ node, onClose }: Props) {
             style={{
               position:   'fixed',
               top: 0, right: 0,
-              width:      'min(420px, 100vw)',
+              width:      'min(430px, 100vw)',
               height:     '100vh',
-              background: 'var(--color-surface)',
-              borderLeft: '1px solid var(--color-border)',
+              background: 'linear-gradient(160deg, var(--color-surface-2) 0%, var(--color-surface) 55%, #0e1219 100%)',
+              borderLeft: `1px solid ${kindColor[node.kind]}40`,
+              boxShadow:  `-24px 0 60px rgba(0,0,0,0.55), inset 1px 0 0 ${kindColor[node.kind]}30`,
               overflowY:  'auto',
               zIndex:     100,
               fontFamily: 'var(--font-mono)',
@@ -103,7 +109,9 @@ export function ReadoutPanel({ node, onClose }: Props) {
             <div style={{
               position:        'sticky',
               top: 0,
-              background:      'var(--color-surface)',
+              background:      'rgba(18, 21, 28, 0.82)',
+              backdropFilter:  'blur(8px)',
+              WebkitBackdropFilter: 'blur(8px)',
               borderBottom:    '1px solid var(--color-border)',
               padding:         '14px 20px',
               display:         'flex',
@@ -119,18 +127,40 @@ export function ReadoutPanel({ node, onClose }: Props) {
                 onClick={onClose}
                 aria-label="Close readout panel"
                 style={{
-                  background: 'none', border: '1px solid var(--color-border)',
-                  color: 'var(--color-text)', borderRadius: '3px',
-                  padding: '4px 12px', cursor: 'pointer',
+                  background: 'rgba(255,255,255,0.02)', border: '1px solid var(--color-border)',
+                  color: 'var(--color-text)', borderRadius: '6px',
+                  padding: '5px 13px', cursor: 'pointer',
                   fontSize: '10px', letterSpacing: '0.1em',
                   fontFamily: 'var(--font-mono)',
+                  transition: 'border-color 0.2s, background 0.2s, color 0.2s',
                 }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--color-accent)'; e.currentTarget.style.color = 'var(--color-heading)' }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--color-border)'; e.currentTarget.style.color = 'var(--color-text)' }}
               >
                 CLOSE
               </button>
             </div>
 
             <div style={{ padding: '24px 24px 40px' }}>
+              {/* Portrait (résumé / output node) */}
+              {node.image && (
+                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
+                  <img
+                    src={node.image}
+                    alt={node.title}
+                    onError={e => {
+                      const t = e.currentTarget
+                      if (!t.src.endsWith('/profile-placeholder.svg')) t.src = '/profile-placeholder.svg'
+                    }}
+                    style={{
+                      width: '128px', height: '128px', borderRadius: '50%', objectFit: 'cover',
+                      border: `2px solid ${kindColor[node.kind]}`,
+                      boxShadow: `0 0 28px ${kindColor[node.kind]}55, 0 6px 20px rgba(0,0,0,0.5)`,
+                    }}
+                  />
+                </div>
+              )}
+
               {/* Title */}
               <h2
                 id="readout-title"
@@ -164,7 +194,7 @@ export function ReadoutPanel({ node, onClose }: Props) {
                     <span key={s} style={{
                       fontSize: '11px', background: 'var(--color-chrome)',
                       color: 'var(--color-heading)', border: '1px solid var(--color-border)',
-                      borderRadius: '3px', padding: '4px 9px',
+                      borderRadius: '6px', padding: '4px 10px',
                     }}>
                       {s}
                     </span>

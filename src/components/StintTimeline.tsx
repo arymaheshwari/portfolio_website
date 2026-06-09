@@ -74,15 +74,25 @@ export function StintTimeline({ nodeStates, selectedNode, onSelect }: Props) {
                 }}
                 style={{
                   flex:        1,
-                  background:  isSelected ? '#161b28' : isActive ? '#14192a' : isDone ? '#13181f' : 'var(--color-surface)',
+                  background:  isSelected
+                    ? 'linear-gradient(155deg, #1a2030 0%, #12161f 100%)'
+                    : isActive
+                    ? 'linear-gradient(155deg, #19202e 0%, #12161f 100%)'
+                    : isDone
+                    ? 'linear-gradient(155deg, #161b24 0%, #11151c 100%)'
+                    : 'linear-gradient(155deg, var(--color-surface-2) 0%, var(--color-surface) 100%)',
                   border:      `1px solid ${isSelected ? color + 'AA' : isActive ? color + '55' : 'var(--color-border)'}`,
                   borderLeft:  `3px solid ${color}`,
-                  borderRadius:'4px',
+                  borderRadius:'9px',
                   padding:     '12px 14px',
                   cursor:      'pointer',
                   fontFamily:  'var(--font-mono)',
-                  transition:  'background 0.3s, border-color 0.3s',
-                  boxShadow:   isActive ? `0 0 16px ${color}20` : 'none',
+                  transition:  'background 0.3s, border-color 0.3s, box-shadow 0.3s',
+                  boxShadow:   isActive
+                    ? `0 0 18px ${color}22, 0 3px 12px rgba(0,0,0,0.35)`
+                    : isSelected
+                    ? `0 0 0 1px ${color}40, 0 6px 20px ${color}1f`
+                    : '0 2px 10px rgba(0,0,0,0.3)',
                   textAlign:   'left',
                 }}
               >
@@ -106,7 +116,7 @@ export function StintTimeline({ nodeStates, selectedNode, onSelect }: Props) {
                     <span key={s} style={{
                       fontSize: '9px', background: 'var(--color-chrome)',
                       color: 'var(--color-text)', border: '1px solid var(--color-border)',
-                      borderRadius: '2px', padding: '2px 5px',
+                      borderRadius: '4px', padding: '2px 6px',
                     }}>
                       {s}
                     </span>
