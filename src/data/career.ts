@@ -19,7 +19,7 @@ export type Edge = { from: string; to: string }
 // ── Nodes ─────────────────────────────────────────────────────────────────────
 
 export const nodes: CareerNode[] = [
-  // ── Foundations ─────────────────────────────────────────────────────────────
+  // ── Foundation ──────────────────────────────────────────────────────────────
 
   {
     id: 'edu',
@@ -28,265 +28,220 @@ export const nodes: CareerNode[] = [
     start: '2023-09',
     end: '2027-05',
     kind: 'edu',
-    stack: ['Python', 'C', 'Java', 'SQL', 'Linux'],
-    summary: 'GPA 3.8. Dual CS + Data Science degree; systems and data tracks running in parallel.',
+    stack: ['Python', 'C', 'Java', 'JavaScript', 'SQL', 'R'],
+    summary: 'GPA 3.7. Dual CS + Data Science degree. Graduating May 2027.',
     detail:
-      'University of Wisconsin–Madison, graduating May 2027. GPA 3.8. ' +
-      'The degree runs two parallel tracks: a low-level systems track (C, OS, architecture) ' +
-      'and a data-systems track (databases, distributed computing, ML). ' +
-      'Both tracks converge at the industry nodes — the systems depth feeds the infrastructure work, ' +
-      'the data depth feeds the pipeline work.',
-    feeds: 'The CS core splits into two parallel tracks that develop independently before converging at HG Insights.',
+      'University of Wisconsin–Madison, graduating May 2027. GPA 3.7/4. ' +
+      'Dual degree in Computer Science and Data Science.\n\n' +
+      'The degree runs two parallel tracks: a systems track (OS, algorithms, C programming) ' +
+      'and a data-systems track (databases, big data). ' +
+      'Coursework: Data Structures & Algorithms, OS, Big Data Systems, Database Management & Systems.',
+    feeds:
+      'The CS core splits into a systems track and a data track that each feed separate downstream work before converging at HG Insights.',
   },
+
+  // ── Coursework ──────────────────────────────────────────────────────────────
 
   {
     id: 'coursework-systems',
-    title: 'Systems Programming',
-    org: 'CS 354 · CS 537 — UW–Madison',
+    title: 'Systems Programming & OS',
+    org: 'UW–Madison',
     start: '2023-09',
     end: '2024-12',
     kind: 'coursework',
-    stack: ['C', 'x86 Assembly', 'xv6', 'POSIX', 'Linux'],
-    summary:
-      'Machine organization, OS internals. Built a custom memory allocator, shell, thread pool, ' +
-      'concurrent BST, and extended xv6 with mmap, xattr, and a container runtime.',
+    stack: ['C', 'OS', 'Data Structures', 'Algorithms', 'Linux'],
+    summary: 'OS internals and data structures & algorithms. C programming throughout.',
     detail:
-      'CS 354 (Machine Organization & Programming) and CS 537 (Operating Systems). ' +
-      'Written in C throughout. ' +
-      'Projects: custom memory allocator (free-list coalescing), POSIX shell with pipes/redirection, ' +
-      'thread pool with work-stealing queue, concurrent BST with fine-grained locking. ' +
-      'Extended the xv6 teaching OS: added mmap/munmap, extended attributes (xattr), ' +
-      'a lightweight container runtime, and a scheduling policy. ' +
-      'Also studied cache hierarchy, virtual memory, and process scheduling.',
+      'Coursework covering operating systems and data structures & algorithms.\n\n' +
+      '**OS track**: process scheduling, virtual memory, file systems, concurrency primitives, ' +
+      'and the kernel lifecycle — all implemented in C.\n\n' +
+      '**Algorithms track**: asymptotic analysis, sorting, graph algorithms, dynamic programming, ' +
+      'and complexity classes.\n\n' +
+      'The low-level C and systems programming foundation built here carries into every subsequent role ' +
+      'requiring embedded firmware or backend infrastructure.',
     feeds:
-      'C and OS-level systems knowledge feeds directly into bare-metal firmware (Wisconsin Racing) ' +
-      'and backend infrastructure design (HG Insights).',
+      'C and systems programming knowledge feeds directly into steering-wheel firmware at Wisconsin Racing and backend pipeline infrastructure at HG Insights.',
   },
 
   {
     id: 'coursework-data',
-    title: 'Database & Big-Data Systems',
-    org: 'CS 564 · CS 544 — UW–Madison',
+    title: 'Databases & Big Data Systems',
+    org: 'UW–Madison',
     start: '2024-01',
     end: '2025-05',
     kind: 'coursework',
-    stack: ['SQL', 'Python', 'Spark', 'Cassandra', 'HDFS', 'Docker', 'Java'],
-    summary:
-      'Database internals and distributed data systems. Implemented a Buffer Manager, ' +
-      'Heap File Manager, and B+ Tree index from scratch. Worked with Spark, Cassandra, HDFS.',
+    stack: ['SQL', 'PostgreSQL', 'Python', 'Big Data', 'Distributed Systems'],
+    summary: 'Database internals and big data systems. SQL, query optimization, large-scale data processing.',
     detail:
-      'CS 564 (Database Management Systems) and CS 544 (Big Data Systems). ' +
-      'From-scratch implementations: Buffer Manager with LRU eviction, Heap File Manager, ' +
-      'B+ Tree index with split/merge. Query parsing and optimization fundamentals. ' +
-      'In the big-data half: Spark RDDs and DataFrames, Cassandra wide-column modeling, ' +
-      'HDFS block layout, Docker-based cluster setup. ' +
-      'Emphasis throughout on understanding what happens below the abstraction boundary.',
+      'Coursework covering Database Management & Systems and Big Data Systems.\n\n' +
+      '**Database track**: SQL, relational algebra, query planning and optimization, ' +
+      'transaction management, indexing structures, and storage engine fundamentals.\n\n' +
+      '**Big data track**: distributed processing, partitioning, fault tolerance, ' +
+      'and large-scale data pipeline design.\n\n' +
+      'The database internals coursework naturally raises the question of more efficient index structures — ' +
+      'directly motivating the novel data structure work.',
     feeds:
-      'Buffer management, B+ tree internals, and distributed-system mental models feed directly ' +
-      'into the data pipeline work at HG Insights and motivate the Predicate Partition Tree structure.',
-  },
-
-  {
-    id: 'research-eeg',
-    title: 'EEG/FFR Signal Classification',
-    org: 'UW–Madison Neuroscience Lab',
-    start: '2024-01',
-    end: '2024-08',
-    kind: 'research',
-    stack: ['Python', 'NumPy', 'SciPy', 'scikit-learn', 'MNE-Python'],
-    summary:
-      'Built a signal-processing and classification pipeline for EEG/FFR data ' +
-      'to decode Mandarin tonal features — first applied-ML pipeline work.',
-    detail:
-      'Undergraduate research in a cognitive neuroscience lab studying auditory brainstem responses. ' +
-      'The task: classify EEG frequency-following responses (FFR) to distinguish Mandarin lexical tones. ' +
-      'Built end-to-end: raw EEG ingestion → bandpass filtering → epoch extraction → ' +
-      'feature engineering (spectral, temporal) → scikit-learn classifier pipeline. ' +
-      'First experience owning a full data pipeline from raw sensor data to model output. ' +
-      'Introduced the pattern of treating a pipeline as a typed sequence of transforms — ' +
-      'a pattern that recurs in every subsequent role.',
-    feeds:
-      'Owning a full ML pipeline from raw data to output — and the discipline of typed, reproducible transforms — ' +
-      'carries directly into the clinical NLP pipeline at Aeries.',
+      'Database and distributed-systems depth feeds into large-scale data pipeline work at HG Insights and motivates the novel data structure patent.',
   },
 
   // ── Industry ─────────────────────────────────────────────────────────────────
 
   {
     id: 'aeries',
-    title: 'Small Language Model — Clinical Screening',
-    org: 'Aeries Technology · Mumbai',
+    title: 'Candidate-Ranking Tool',
+    org: 'Aeries Technology · Mumbai (Product Intern)',
     start: '2024-05',
     end: '2024-08',
     kind: 'industry',
-    stack: ['Python', 'PyTorch', 'Hugging Face', 'FastAPI', 'PostgreSQL'],
+    stack: ['Python', 'React', 'Docker', 'GCP', 'REST APIs'],
     summary:
-      'Built an SLM pipeline that ingests doctor–patient transcripts and produces structured ' +
-      'clinical screening outputs. First production SLM work.',
+      'Full-stack candidate-ranking tool — React frontend, agentic Python backend. ' +
+      'Cuts manual screening from weeks to minutes. Deployed on GCP.',
     detail:
-      'Designed and implemented a pipeline to transform unstructured doctor–patient conversation ' +
-      'transcripts into structured clinical screening summaries using a fine-tuned small language model. ' +
-      'Owned the full stack: data cleaning and prompt construction, fine-tuning loop, ' +
-      'evaluation harness, and a FastAPI inference service backed by PostgreSQL. ' +
-      'Key constraint: the model had to run on modest hardware (no GPU serving budget), ' +
-      'which forced careful quantization and batching decisions. ' +
-      'This was the first time I shipped a language model into a production pipeline ' +
-      'rather than a research notebook.',
+      'Product Intern at Aeries Technology, Mumbai. May 2024 – August 2024.\n\n' +
+      'Built a full-stack candidate-ranking tool with a React frontend and an agentic Python backend, ' +
+      'cutting manual screening of hundreds of applicants from weeks to minutes.\n\n' +
+      'Developed REST APIs connecting the frontend to the ranking service, with ' +
+      '**prompt-injection checks** and output verification to keep rankings reliable.\n\n' +
+      'Containerized with **Docker** and deployed on **GCP**, running end-to-end from ' +
+      'resume input to a ranked shortlist surfaced to HR.',
     feeds:
-      'First production SLM — established the foundation for the NER pipeline and ' +
-      'LangGraph DAG orchestration work at HG Insights.',
+      'First production fullstack and AI product experience — API design, prompt safety, and deployment — feeds into the AI Mock Interview project and the HG Insights internship.',
   },
 
   {
     id: 'hg',
-    title: 'Data & ML Infrastructure',
+    title: 'Revenue Growth & Market Analysis Model',
     org: 'HG Insights · Santa Barbara (SWE Intern)',
-    start: '2024-09',
-    end: '2025-08',
+    start: '2025-05',
     kind: 'industry',
-    stack: [
-      'Python', 'LangGraph', 'AWS Lambda', 'Docker', 'SQS', 'Databricks',
-      'Pydantic', 'RoBERTa', 'ECR', 'asyncio', 'MCP',
-    ],
+    stack: ['Python', 'LangGraph', 'AWS AgentCore', 'AWS Lambda', 'Docker', 'ECR', 'SLM'],
     summary:
-      'Built distributed data pipelines and ML infrastructure on AWS. ' +
-      'LangGraph DAG orchestration, NER models, SEC filing enrichment, ' +
-      'and a custom MCP server for CSV enrichment.',
+      'LangGraph DAG pipeline for Revenue Growth & Market Analysis. ' +
+      'Normalized 15M+ rows (20%→100% completeness), 180-class taxonomy. ' +
+      'Powers market analysis for 75% of Fortune 100 tech companies.',
     detail:
-      'Multi-stint internship at a B2B intelligence company. Work spanned four distinct pipeline systems:\n\n' +
-      '**LangGraph DAG pipelines** — Designed and deployed multi-step data processing DAGs on ' +
-      'AWS Lambda/Docker with SQS for parallelization and Databricks for compute-intensive stages. ' +
-      'Built the orchestration layer that coordinates between queue producers, Lambda workers, ' +
-      'and downstream consumers.\n\n' +
-      '**NER model development** — Fine-tuned JobBERT and RoBERTa with BILOU tagging for ' +
-      'product-mention extraction from company tech-stack descriptions. ' +
-      'Owned the training pipeline, evaluation, and the serving integration.\n\n' +
-      '**Firmographics enrichment pipeline** — Built a pipeline to extract structured company attributes ' +
-      'from SEC 10-K/10-Q filings. Pydantic models for schema enforcement; ' +
-      'deployed on AWS Lambda via ECR.\n\n' +
-      '**MCP server for CSV enrichment** — Implemented a custom Model Context Protocol server ' +
-      'with asyncio parallelism for high-throughput CSV enrichment tasks.',
+      'Software Engineering Intern at HG Insights, a B2B technology intelligence company. ' +
+      'May 2025 – Dec 2025, May 2026 – Current.\n\n' +
+      '**Revenue Growth & Market Analysis pipeline** — Designed and built the backend pipeline in Python, ' +
+      'architecting a **LangGraph** DAG that orchestrates SEC filing ingestion and a trained **SLM**. ' +
+      'Deployed on **AWS AgentCore, Lambda, and ECR (Docker)**.\n\n' +
+      '**Data curation and normalization** — Drove data completeness for **15M+** unique rows from ' +
+      '**20% to 100%**, then categorized them into a 180-class taxonomy to make the training set consistent.\n\n' +
+      '**Production impact** — Shipped the model into production, powering market analysis for ' +
+      '**75% of the tech companies in the Fortune 100**.',
     feeds:
-      'Multi-step pipeline orchestration and LangGraph experience feeds directly into ' +
-      'the multi-agent architecture of the AI Mock Interview system ' +
-      'and the financial due-diligence pipeline.',
+      'Production LangGraph orchestration and MCP experience at HG directly enables the research lab\'s MCP-based neural network deployment.',
   },
+
+  // ── Projects ─────────────────────────────────────────────────────────────────
 
   {
     id: 'wiscracing',
-    title: 'Firmware Engineer — Wind-Tunnel Calibration Rig',
+    title: 'Formula SAE Steering & DAQ Firmware',
     org: 'Wisconsin Racing (Formula SAE)',
-    start: '2023-09',
-    kind: 'industry',
-    stack: ['C', 'Arduino', 'ESP32', 'Python', 'DRV8825', 'Serial/UART'],
+    start: '2025-09',
+    kind: 'project',
+    stack: ['C', 'ESP32', 'CAN bus', 'Python', 'Firmware'],
     summary:
-      'Designed and built a pitot-tube gimbal calibration rig for wind-tunnel testing — ' +
-      'full firmware from scratch on ESP32/Arduino with a Python orchestration layer.',
+      'Steering-wheel firmware in C on ESP32. ' +
+      '1st Design, 2nd Autocross, 7th Overall at FSAE Michigan 2025.',
     detail:
-      'Wisconsin Racing is UW–Madison\'s Formula SAE team. ' +
-      'As a firmware engineer, I owned the pitot-tube gimbal calibration rig — ' +
-      'a mechanism used in wind-tunnel sessions to sweep the pitot tube across calibration angles ' +
-      'and validate airspeed sensor accuracy.\n\n' +
-      'Scope: designed the motor control system using DRV8825 stepper drivers, ' +
-      'implemented UART serial communication between the ESP32 and a Python host, ' +
-      'wrote the full firmware from scratch (no RTOS — bare-metal loop with state machine), ' +
-      'and built the Python orchestrator that sequences calibration passes, ' +
-      'reads sensor output, and logs structured data for the aerodynamics team.',
-    feeds:
-      'Direct application of CS 354/537 systems knowledge to real embedded hardware — ' +
-      'proves the systems track translates from xv6 to production firmware.',
+      'Led the design for the steering-wheel firmware and low-level control software in **C** on an **ESP32**, ' +
+      'managing real-time driver inputs over **CAN bus** and analog potentiometers.\n\n' +
+      'Built and programmed aerodynamic data-acquisition tools to record on-track performance, ' +
+      'validated on the car at Ford\'s Wind Tunnel in Detroit, MI.\n\n' +
+      'Placed **1st in Design**, **2nd in Autocross**, and **7th Overall** at Formula FSAE Michigan 2025.',
   },
-
-  // ── Shipped Projects ─────────────────────────────────────────────────────────
 
   {
     id: 'mockinterview',
     title: 'AI Mock Interview System',
     org: 'Personal Project',
     start: '2025-01',
-    end: '2025-06',
     kind: 'project',
-    stack: ['Python', 'CrewAI', 'FastAPI', 'React', 'TypeScript', 'OpenAI', 'Ollama'],
+    stack: ['Python', 'FastAPI', 'React', 'OpenAI', 'Ollama', 'Multi-agent'],
     summary:
-      'Multi-agent mock interview platform — specialized agents for questioning, evaluation, ' +
-      'and feedback. 150+ users. Supports both OpenAI and local Ollama models.',
+      'Multi-agent interview platform — 150+ users in the first month. ' +
+      'FastAPI + React, multi-model routing across OpenAI and Ollama.',
     detail:
-      'A multi-agent system where distinct agents handle different roles in the interview loop: ' +
-      'a questioning agent (generates role-specific questions from a job description), ' +
-      'an evaluation agent (scores responses against a rubric), ' +
-      'and a feedback agent (synthesizes actionable feedback). ' +
-      'Orchestrated with CrewAI; FastAPI backend; React/TypeScript frontend.\n\n' +
-      'Supports both OpenAI (cloud) and Ollama (local) as the model backend — ' +
-      'the agent logic is model-agnostic by design. ' +
-      '150+ users organically. ' +
-      'The architecture maps directly from the LangGraph DAG pipelines at HG — ' +
-      'multi-step orchestration with typed inputs/outputs between agents.',
-    links: [],
+      'Architected a multi-agent interview platform, coordinating specialized agents for ' +
+      'resume analysis, question generation, and response evaluation, served through a ' +
+      '**FastAPI** backend and **React** frontend.\n\n' +
+      'Reached **150+ users** in the first month during recruiting season, running voice-based ' +
+      'mock interviews end-to-end from resume upload to scored feedback.\n\n' +
+      'Engineered **multi-model routing** across hosted (OpenAI) and self-hosted (Ollama) LLMs, ' +
+      'decoupling the system from any single provider for cost and availability control.',
     feeds:
-      'Demonstrates that the pipeline orchestration skills from HG transfer to ' +
-      'consumer-facing multi-agent product work.',
+      'Multi-agent orchestration and FastAPI discipline demonstrates readiness for LangGraph pipeline work at HG Insights.',
   },
 
   {
-    id: 'duediligence',
-    title: 'Financial Due-Diligence Dashboard',
-    org: 'Personal Project',
-    start: '2025-06',
-    end: '2025-09',
-    kind: 'project',
-    stack: ['React', 'TypeScript', 'Python', 'FastAPI', 'LangGraph', 'PostgreSQL'],
+    id: 'research',
+    title: 'EEG Speech Classification Research',
+    org: 'University of Wisconsin–Madison (Research Assistant)',
+    start: '2025-09',
+    end: '2026-05',
+    kind: 'research',
+    stack: ['Python', 'PyTorch', 'EEG / Signal Processing', 'Neural Networks', 'MCP', 'Claude Code'],
     summary:
-      'Dashboard that runs automated due-diligence analysis on financial documents — ' +
-      'multi-step extraction pipeline feeding a React visualization layer.',
+      '81% accuracy classifying Mandarin phonetic contrasts from raw EEG signals. ' +
+      'MCP server productionized for lab use via Claude Code.',
     detail:
-      'A full-stack application for automated financial due-diligence. ' +
-      'The backend is a LangGraph-orchestrated pipeline: document ingestion → ' +
-      'section extraction → structured data normalization (Pydantic) → ' +
-      'risk and signal summarization → PostgreSQL storage. ' +
-      'The React frontend visualizes the pipeline outputs as a structured dashboard ' +
-      'with drill-down into individual document sections. ' +
-      'Built directly from the patterns established at HG — ' +
-      'SEC filing parsing, Pydantic schema enforcement, and multi-step orchestration ' +
-      'all carry over with minimal adaptation.',
-    links: [],
+      'Undergraduate Research Assistant, University of Wisconsin–Madison. Sep 2025 – May 2026.\n\n' +
+      'Built a **ML pipeline** to classify natural speech from raw EEG signals, implementing the methodology ' +
+      'from **Berg et al. (2021) IEEE Paper** in Python end-to-end — signal preprocessing and classification.\n\n' +
+      'Trained and evaluated multiple **neural network** architectures to improve classification, reaching ' +
+      '**81% accuracy** on recognizing critical Mandarin phonetic contrasts.\n\n' +
+      'Productionized an **MCP server** exposing the model via the local network, giving lab students a clean ' +
+      'interface to run the neural network and classify Mandarin phonetics without any ML setup — ' +
+      'built with Claude Code.',
   },
 
   {
     id: 'ppt',
-    title: 'Predicate Partition Tree',
-    org: 'Research / Patent Pending',
+    title: 'Novel Data Structure — Patent Filed',
+    org: 'Personal Research',
     start: '2025-03',
     kind: 'project',
-    stack: ['Python', 'C++', 'Data Structures', 'Query Optimization'],
+    stack: ['Python', 'C++', 'Data Structures', 'Algorithms'],
     summary:
-      'A tree-based data structure for range-predicate queries. ' +
-      'Partition-aware traversal prunes non-matching branches early. Patent application in progress.',
+      'Novel tree-based data structure for range-predicate queries. Patent filed. ' +
+      'Also contributed open-source code to VSCode.',
     detail:
-      'The Predicate Partition Tree (PPT) is a custom tree structure designed to answer ' +
-      'range-predicate queries more efficiently than a naive scan by partitioning the ' +
-      'key space at each internal node in a predicate-aware way. ' +
+      'Designed and implemented a novel tree-based data structure optimized for range-predicate queries. ' +
       'Non-matching subtrees are pruned at traversal time based on stored partition bounds, ' +
-      'reducing the number of comparisons for queries with selective predicates.\n\n' +
-      'The structure emerged from the B+ Tree work in CS 564 — ' +
-      'specifically from asking why a standard B+ tree has to visit nodes that are ' +
-      'provably outside a query\'s predicate range. ' +
-      'Patent application in progress. ' +
-      'Implementation in Python (prototype) and C++ (performance evaluation).',
-    links: [],
+      'reducing comparisons for queries with selective predicates.\n\n' +
+      'The structure emerged from database internals coursework — specifically from examining ' +
+      'why a standard index visits nodes provably outside a query\'s predicate range.\n\n' +
+      '**Patent filed** for the novel data structure. ' +
+      'Also contributed an open-source fix to VSCode.',
   },
 ]
 
 // ── Edges ─────────────────────────────────────────────────────────────────────
+//
+// DAG narrative:
+//   edu            → coursework tracks (systems + data)
+//   systems track  → aeries, wiscracing, hg (backend infrastructure)
+//   data track     → aeries, hg (pipelines), ppt (novel index)
+//   aeries         → mockinterview (first fullstack → personal project), hg
+//   mockinterview  → hg (multi-agent readiness → LangGraph work)
+//   hg             → research (LangGraph/MCP experience → research MCP server)
+//
+// hg has 4 inbound edges (cs-sys, cs-data, aeries, mockinterview) — convergence node.
 
 export const edges: Edge[] = [
-  { from: 'edu',               to: 'coursework-systems' },
-  { from: 'edu',               to: 'coursework-data'    },
+  { from: 'edu',                to: 'coursework-systems' },
+  { from: 'edu',                to: 'coursework-data'    },
+  { from: 'coursework-systems', to: 'aeries'             },
+  { from: 'coursework-data',    to: 'aeries'             },
   { from: 'coursework-systems', to: 'wiscracing'         },
   { from: 'coursework-systems', to: 'hg'                 },
-  { from: 'coursework-data',   to: 'hg'                  },
-  { from: 'research-eeg',      to: 'aeries'              },
-  { from: 'aeries',            to: 'hg'                  },
-  { from: 'hg',                to: 'mockinterview'       },
-  { from: 'hg',                to: 'duediligence'        },
-  { from: 'coursework-data',   to: 'ppt'                 },
+  { from: 'coursework-data',    to: 'hg'                 },
+  { from: 'coursework-data',    to: 'ppt'                },
+  { from: 'aeries',             to: 'mockinterview'      },
+  { from: 'aeries',             to: 'hg'                 },
+  { from: 'mockinterview',      to: 'hg'                 },
+  { from: 'hg',                 to: 'research'           },
 ]

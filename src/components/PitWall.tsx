@@ -17,16 +17,15 @@ import { SectorTiming } from './SectorTiming'
 import { StintTimeline } from './StintTimeline'
 
 const POSITIONS: Record<string, { x: number; y: number }> = {
-  'edu':                { x: 0,    y: 280 },
-  'research-eeg':       { x: 0,    y: 580 },
-  'coursework-systems': { x: 320,  y: 80  },
-  'coursework-data':    { x: 320,  y: 430 },
-  'wiscracing':         { x: 640,  y: 0   },
-  'aeries':             { x: 640,  y: 580 },
-  'ppt':                { x: 640,  y: 790 },
-  'hg':                 { x: 960,  y: 280 },
-  'mockinterview':      { x: 1290, y: 80  },
-  'duediligence':       { x: 1290, y: 480 },
+  'edu':                { x: 0,    y: 250 },
+  'coursework-systems': { x: 300,  y: 60  },
+  'coursework-data':    { x: 300,  y: 400 },
+  'wiscracing':         { x: 600,  y: 0   },
+  'aeries':             { x: 600,  y: 280 },
+  'ppt':                { x: 600,  y: 540 },
+  'mockinterview':      { x: 900,  y: 100 },
+  'hg':                 { x: 1180, y: 240 },
+  'research':           { x: 1480, y: 200 },
 }
 
 const nodeTypes = { career: CareerNodeCard }

@@ -89,13 +89,18 @@ describe('career DAG — topological correctness', () => {
     expect(order.indexOf('aeries')).toBeLessThan(order.indexOf('hg'))
   })
 
-  it('hg comes before its output nodes', () => {
+  it('aeries comes before mockinterview', () => {
     order = topoSort(nodeIds, edges)
-    expect(assertPrecedence(order, 'hg', ['mockinterview', 'duediligence'])).toBe(true)
+    expect(order.indexOf('aeries')).toBeLessThan(order.indexOf('mockinterview'))
   })
 
-  it('research-eeg comes before aeries', () => {
+  it('mockinterview comes before hg', () => {
     order = topoSort(nodeIds, edges)
-    expect(order.indexOf('research-eeg')).toBeLessThan(order.indexOf('aeries'))
+    expect(order.indexOf('mockinterview')).toBeLessThan(order.indexOf('hg'))
+  })
+
+  it('hg comes before research', () => {
+    order = topoSort(nodeIds, edges)
+    expect(assertPrecedence(order, 'hg', ['research'])).toBe(true)
   })
 })
