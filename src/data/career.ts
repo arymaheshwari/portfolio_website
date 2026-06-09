@@ -11,8 +11,9 @@ export type CareerNode = {
   summary: string  // hover preview (1–2 lines)
   detail: string   // readout panel (full)
   links?: { label: string; url: string }[]
-  feeds?: string   // why this led to the next layer
-  image?: string   // optional portrait shown in the readout panel
+  feeds?: string       // why this led to the next layer
+  image?: string       // optional portrait shown in the readout panel
+  narration?: string   // first-person one-liner typed out during a run
 }
 
 export type Edge = { from: string; to: string }
@@ -289,6 +290,24 @@ export const nodes: CareerNode[] = [
 
 const COURSES  = ['ds-algo', 'bigdata', 'dbms', 'os', 'ai']
 const PROJECTS = ['wiscracing', 'mockinterview', 'ppt']
+
+// First-person narration, typed out as each node lights up during a run.
+const NARRATION: Record<string, string> = {
+  edu:           "I'm doing a dual B.S. in Computer Science & Data Science at UW–Madison — 3.7 GPA, class of 2027. A few of my notable major courses are lit up here: this is where I picked up my core skills.",
+  'ds-algo':     "I built a rigorous foundation in data structures & algorithms — the reasoning toolkit behind everything I build.",
+  bigdata:       "I learned to process data at scale: distributed systems, partitioning, and fault-tolerant pipelines.",
+  dbms:          "I went deep on database internals — SQL, query planning, and indexing all the way down to the storage engine.",
+  os:            "I wrote low-level systems in C — processes, memory, and concurrency inside a real operating-system kernel.",
+  ai:            "I studied AI end to end: search and probabilistic reasoning through the foundations of neural networks.",
+  hg:            "At HG Insights I shipped a LangGraph pipeline on AWS that now powers market analysis for 75% of the Fortune 100 tech companies.",
+  aeries:        "At Aeries I built a full-stack AI candidate-ranking tool that cut manual screening from weeks down to minutes.",
+  research:      "In the lab I implemented an IEEE research paper and hit 81% accuracy classifying Mandarin speech from raw EEG, then shipped the model as an MCP server.",
+  wiscracing:    "For Wisconsin Racing I wrote the steering-wheel firmware in C — we placed 1st in Design at FSAE Michigan 2025.",
+  mockinterview: "I built a multi-agent AI mock-interview platform that reached 150+ users in its first month.",
+  ppt:           "I designed a novel data structure for range queries — patent filed — and landed an open-source fix in VSCode.",
+  resume:        "Every path resolves here: this is my résumé. Download it up top, or reach me through the links.",
+}
+for (const n of nodes) n.narration = NARRATION[n.id]
 
 export const edges: Edge[] = [
   // education seeds every course

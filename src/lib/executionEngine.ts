@@ -5,115 +5,117 @@ import { topoSort } from './topoSort'
 export type NodeExecState = 'idle' | 'active' | 'complete'
 export type SessionState  = 'idle' | 'running' | 'complete'
 
-const NODE_ACTIVE_MS = 800   // how long a node stays "active"
-const EDGE_TRAVEL_MS = 500   // time for the edge-flow animation before activating next
-const CONV_PAUSE_MS  = 800   // extra beat before a convergence node activates
-const CONVERGENCE_IDS = new Set<string>()  // symmetric layers — no special pause
+export const TYPE_SPEED_MS = 26   // ms per character — shared with NarrationBox
+const READ_BUFFER_MS = 2000       // pause to read after the line finishes typing
+const STEP_GAP_MS    = 300        // gap between nodes
 
 export const topoOrder = topoSort(careerNodes.map(n => n.id), careerEdges)
 
-// parent map: nodeId → [parentId, …]
-const parentOf = new Map<string, string[]>()
-for (const n of careerNodes) parentOf.set(n.id, [])
-for (const e of careerEdges)  parentOf.get(e.to)!.push(e.from)
+const nodeById = new Map(careerNodes.map(n => [n.id, n]))
 
-// Critical-path start time for each node
-function computeStartTimes(): Map<string, number> {
-  const doneAt  = new Map<string, number>()
-  const startsAt = new Map<string, number>()
+// The narrated run sequence. Coursework is collapsed into the education step —
+// the courses light up together and are mentioned in the education narration,
+// rather than being narrated one node at a time.
+type Step = { id: string; activate: string[] }
 
-  for (const id of topoOrder) {
-    const parents = parentOf.get(id)!
-    const ready = parents.length === 0
-      ? 0
-      : Math.max(...parents.map(p => doneAt.get(p)!)) + EDGE_TRAVEL_MS
-
-    const start = ready + (CONVERGENCE_IDS.has(id) ? CONV_PAUSE_MS : 0)
-    startsAt.set(id, start)
-    doneAt.set(id, start + NODE_ACTIVE_MS)
+const STEPS: Step[] = (() => {
+  const courseIds = careerNodes.filter(n => n.kind === 'coursework').map(n => n.id)
+  const courseSet = new Set(courseIds)
+  const rank = (id: string) => {
+    const k = nodeById.get(id)?.kind
+    if (k === 'industry' || k === 'research') return 0
+    if (k === 'project') return 1
+    if (k === 'resume')  return 3
+    return 2
   }
+  const rest = topoOrder
+    .filter(id => id !== 'edu' && !courseSet.has(id))
+    .sort((a, b) => rank(a) - rank(b)) // stable: preserves topo order within a rank
+  return [
+    { id: 'edu', activate: ['edu', ...courseIds] },
+    ...rest.map(id => ({ id, activate: [id] })),
+  ]
+})()
 
-  return startsAt
+// Ids that actually get a narration step (coursework is folded into 'edu').
+export const narratedSteps = STEPS.map(s => s.id)
+
+// Active duration scales with the narration length: time to type + time to read.
+function activeDuration(id: string): number {
+  const text = nodeById.get(id)?.narration ?? nodeById.get(id)?.summary ?? ''
+  return text.length * TYPE_SPEED_MS + READ_BUFFER_MS
 }
-
-export const nodeStartAt = computeStartTimes()
-
-export const totalRunMs = Math.max(...[...nodeStartAt.values()].map(t => t + NODE_ACTIVE_MS)) + 400
 
 export function useExecution() {
   const [session,    setSession]    = useState<SessionState>('idle')
   const [nodeStates, setNodeStates] = useState<Map<string, NodeExecState>>(new Map())
-  const [flowing,    setFlowing]    = useState<Set<string>>(new Set())
-  const [done,       setDone]       = useState<Set<string>>(new Set())
-  const [elapsedMs,  setElapsed]    = useState(0)
-  const timers    = useRef<ReturnType<typeof setTimeout>[]>([])
-  const startedAt = useRef(0)
+  const [narratedId, setNarratedId] = useState<string | null>(null)
+  const timers = useRef<ReturnType<typeof setTimeout>[]>([])
 
   const cancel = () => { timers.current.forEach(clearTimeout); timers.current = [] }
 
   const run = useCallback(() => {
     cancel()
-    startedAt.current = Date.now()
     setSession('running')
     setNodeStates(new Map())
-    setFlowing(new Set())
-    setDone(new Set())
-    setElapsed(0)
+    setNarratedId(null)
 
-    for (const id of topoOrder) {
-      const t      = nodeStartAt.get(id)!
-      const outIds = careerEdges.filter(e => e.from === id).map(e => `${e.from}--${e.to}`)
-      const inIds  = careerEdges.filter(e => e.to   === id).map(e => `${e.from}--${e.to}`)
-
-      // Activate node: stop incoming edges flowing, light up outgoing edges
+    let t = 0
+    for (const step of STEPS) {
+      const at  = t
+      const dur = activeDuration(step.id)
       timers.current.push(setTimeout(() => {
-        setNodeStates(prev => new Map(prev).set(id, 'active'))
-        setFlowing(prev => {
-          const s = new Set(prev)
-          inIds.forEach(e => s.delete(e))
-          outIds.forEach(e => s.add(e))
-          return s
+        setNarratedId(step.id)
+        setNodeStates(prev => {
+          const m = new Map(prev)
+          for (const id of step.activate) m.set(id, 'active')
+          return m
         })
-        setDone(prev => { const s = new Set(prev); inIds.forEach(e => s.add(e)); return s })
-      }, t))
-
-      // Complete node
+      }, at))
       timers.current.push(setTimeout(() => {
-        setNodeStates(prev => new Map(prev).set(id, 'complete'))
-      }, t + NODE_ACTIVE_MS))
+        setNodeStates(prev => {
+          const m = new Map(prev)
+          for (const id of step.activate) m.set(id, 'complete')
+          return m
+        })
+      }, at + dur))
+      t += dur + STEP_GAP_MS
     }
 
-    // Lap complete
-    timers.current.push(setTimeout(() => {
-      setSession('complete')
-      setElapsed(Date.now() - startedAt.current)
-    }, totalRunMs))
+    timers.current.push(setTimeout(() => setSession('complete'), t))
   }, [])
 
   const reset = useCallback(() => {
     cancel()
     setSession('idle')
     setNodeStates(new Map())
-    setFlowing(new Set())
-    setDone(new Set())
-    setElapsed(0)
+    setNarratedId(null)
   }, [])
 
   const skip = useCallback(() => {
     cancel()
     setSession('complete')
     setNodeStates(new Map(topoOrder.map(id => [id, 'complete' as NodeExecState])))
-    setFlowing(new Set())
-    setDone(new Set(careerEdges.map(e => `${e.from}--${e.to}`)))
-    setElapsed(0)
+    setNarratedId('resume')
   }, [])
 
   useEffect(() => () => cancel(), [])
+
+  // Edge states derive from node states: an edge flows while its target is active
+  // and is done once the target completes.
+  const flowing = new Set<string>()
+  const done    = new Set<string>()
+  for (const e of careerEdges) {
+    const id = `${e.from}--${e.to}`
+    const targetState = nodeStates.get(e.to)
+    if (targetState === 'complete')    done.add(id)
+    else if (targetState === 'active') flowing.add(id)
+  }
 
   const activeSectorId = [...nodeStates.entries()].find(([, s]) => s === 'active')?.[0] ?? null
   const completedIds   = new Set(
     [...nodeStates.entries()].filter(([, s]) => s === 'complete').map(([id]) => id),
   )
 
-  return { session, nodeStates, flowing, done, activeSectorId, completedIds, elapsedMs, run, reset, skip }
+  return { session, nodeStates, flowing, done, activeSectorId, narratedId, completedIds, run, reset, skip }
 }

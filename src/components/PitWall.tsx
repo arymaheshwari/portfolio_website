@@ -19,6 +19,7 @@ import { StintTimeline } from './StintTimeline'
 import { BootSequence } from './BootSequence'
 import { AmbientBackdrop } from './AmbientBackdrop'
 import { DataFlowEdge } from './DataFlowEdge'
+import { NarrationBox } from './NarrationBox'
 
 // Five-layer left-to-right layout: edu → coursework → roles → projects → résumé
 const POSITIONS: Record<string, { x: number; y: number }> = {
@@ -68,7 +69,7 @@ function useIsMobile(bp = 768) {
 export function PitWall() {
   const {
     session, nodeStates, flowing, done,
-    activeSectorId, completedIds,
+    activeSectorId, narratedId, completedIds,
     run, reset, skip,
   } = useExecution()
 
@@ -81,22 +82,14 @@ export function PitWall() {
   const isMobile     = useIsMobile()
   const hoverTimer   = useRef<ReturnType<typeof setTimeout> | null>(null)
   const spotlightRef = useRef<HTMLDivElement | null>(null)
-  const autoRan      = useRef(false)
 
   useEffect(() => { if (prefersReduced) skip() }, []) // eslint-disable-line
 
-  // Auto-execute the DAG once the boot sequence clears
-  useEffect(() => {
-    if (booted && !prefersReduced && !autoRan.current && session === 'idle') {
-      autoRan.current = true
-      const t = setTimeout(() => run(), 500)
-      return () => clearTimeout(t)
-    }
-  }, [booted]) // eslint-disable-line
-
-  const activeSector = activeSectorId ? careerNodes.find(n => n.id === activeSectorId) : null
-  const progress     = completedIds.size + (activeSectorId ? 1 : 0)
-  const totalNodes   = topoOrder.length
+  // The narrated node drives both the header "▶" label and the narration box.
+  const narrationNode = narratedId ? (careerNodes.find(n => n.id === narratedId) ?? null) : null
+  const activeSector  = narrationNode
+  const progress      = completedIds.size + (activeSectorId ? 1 : 0)
+  const totalNodes    = topoOrder.length
 
   const liveMsg = session === 'running' && activeSector
     ? `Executing: ${activeSector.title}`
@@ -251,6 +244,7 @@ export function PitWall() {
           selectedNode={selectedNode}
           onSelect={setSelectedNode}
         />
+        <NarrationBox node={narrationNode} />
         <ReadoutPanel node={selectedNode} onClose={() => setSelectedNode(null)} />
       </div>
     )
@@ -336,6 +330,7 @@ export function PitWall() {
         )}
       </div>
 
+      <NarrationBox node={narrationNode} />
       <ReadoutPanel node={selectedNode} onClose={() => setSelectedNode(null)} />
     </div>
   )
