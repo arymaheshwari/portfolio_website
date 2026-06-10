@@ -7,8 +7,8 @@ type Props = {
 export function SkillsPanel({ onHover }: Props) {
   return (
     <div style={{
-      width:         '190px',
-      maxHeight:     '74vh',
+      width:         '224px',
+      maxHeight:     '78vh',
       display:       'flex',
       flexDirection: 'column',
       background:    'linear-gradient(160deg, rgba(22,26,35,0.93) 0%, rgba(14,17,24,0.93) 100%)',
@@ -27,10 +27,10 @@ export function SkillsPanel({ onHover }: Props) {
         flexShrink:   0,
         display:      'flex', alignItems: 'center', justifyContent: 'space-between',
       }}>
-        <span style={{ fontSize: '9px', letterSpacing: '0.18em', color: 'var(--color-heading)', fontWeight: 600 }}>
+        <span style={{ fontSize: '10.5px', letterSpacing: '0.18em', color: 'var(--color-heading)', fontWeight: 600 }}>
           SKILLS
         </span>
-        <span style={{ fontSize: '7px', letterSpacing: '0.14em', color: 'var(--color-text-dim)' }}>
+        <span style={{ fontSize: '8px', letterSpacing: '0.14em', color: 'var(--color-accent)', textShadow: '0 0 10px rgba(255,135,0,0.55)' }}>
           HOVER TO TRACE
         </span>
       </div>
